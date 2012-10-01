@@ -22,7 +22,7 @@ void draw()
 void idle()
 {
 	glutPostRedisplay();
-	//Sleep(100);
+	Sleep(1000);
 }
 
 void initialiseGLUT(int argc, char **argv)
