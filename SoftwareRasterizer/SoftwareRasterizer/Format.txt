@@ -1,0 +1,4 @@
+triangleCount.
+x y z
+nx ny nz
+r g b a
