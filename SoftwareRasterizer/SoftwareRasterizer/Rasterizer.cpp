@@ -4,9 +4,6 @@
 
 Rasterizer* Rasterizer::msRasterizer = NULL;
 
-
-#include "DEL.h"
-
 Rasterizer::Rasterizer()
 {
 	// Create other global singletons 
