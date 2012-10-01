@@ -75,6 +75,8 @@ void RasterizerState::clearColorBuffer(glm::vec3 col)
 void RasterizerState::vUpdateColorAt(int x, int y, glm::vec3 col)
 {
 	//x = 250, y = 250;
+	if (x > 512 || y > 512 || x < 0 || y < 0)
+		return;
 
 	int pos = (x*mWindowWidth*3) + (y*3);
 	mColorBuffer[pos]     = (unsigned char)(col.r / 1.0f * 255);

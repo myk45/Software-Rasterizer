@@ -145,15 +145,70 @@ void Rasterizer::vPerformWindowTransform()
 		float xmin = (x1 < x2) ? (x1 < x3 ? x1 : x3) : (x2 < x3 ? x2 : x3);
 		float xmax = (x1 > x2) ? (x1 > x3 ? x1 : x3) : (x2 > x3 ? x2 : x3);
 		float ymin = (y1 < y2) ? (y1 < y3 ? y1 : y3) : (y2 < y3 ? y2 : y3);
-		float ymax = (y1 > y2) ? (y1 > y3 ? y1 : y3) : (y2 > y3 ? y2 : y3);
+		float ymax = (y1 > y2) ? (y1 > y3 ? y1 : y3) : (y2 > y3 ? y2 : y3);		
 
-		glm::vec3 col;
-		col.r = v1.mColor.r;
-		col.g = v1.mColor.g;
-		col.b = v1.mColor.b;
-		mRasterizerState->getInstance()->vUpdateColorAt((int)xmax, (int)ymax, col);
+		vScanAndColorTriangle(x1, y1, x2, y2, x3, y3);		
 	}	
 }
+
+void Rasterizer::vScanAndColorTriangle(float x1, float y1, 
+									   float x2, float y2,
+									   float x3, float y3)
+{
+	float xMax = (x1 > x2 && x1 > x3) ? (x1) : (x2 > x1 && x2 > x3) ? (x2) : (x3);
+	float yMax = (y1 > y2 && y1 > y3) ? (y1) : (y2 > y1 && y2 > y3) ? (y2) : (y3);
+	float xMin = (x1 < x2 && x1 < x3) ? (x1) : (x2 < x1 && x2 < x3) ? (x2) : (x3);
+	float yMin = (x1 < x2 && x1 < x3) ? (x1) : (x2 < x1 && x2 < x3) ? (x2) : (x3);
+
+	float slope1, slope2; 
+	if (y1 > y2 && y1 > y3) {
+		slope1 = (y2 - y1) / (float)(x2 - x1);
+		slope2 = (y3 - y1) / (float)(x3 - x1);
+		yMax = y1; xMax = x1;
+	} else if (y2 > y3 && y2 > y1) {
+		slope1 = (y3 - y2) / (float)(x3 - x2);
+		slope2 = (y1 - y2) / (float)(x1 - x2);
+		yMax = y2; xMax = x2;		
+	} else {
+		slope1 = (y1 - y3) / (float)(x1 - x3);
+		slope2 = (y2 - y3) / (float)(x2 - x3);
+		yMax = y3; xMax = x3;
+	}
+		
+	float c1 = yMax - (slope1 * xMax);
+	float c2 = yMax - (slope2 * xMax);
+	glm::vec3 col;
+	
+	col.r = 1.0;
+	col.g = 0.0;
+	col.b = 0.0;
+	mRasterizerState->getInstance()->vUpdateColorAt((int)x1, (int)y1, col);
+	mRasterizerState->getInstance()->vUpdateColorAt((int)x2, (int)y2, col);
+	mRasterizerState->getInstance()->vUpdateColorAt((int)x3, (int)y3, col);
+
+	col.r = 1.0;
+	col.g = 1.0;
+	col.b = 1.0;
+
+	// Start with yMax, xMax
+	for (int i = (int)yMax; i > (int)yMin; i--) {
+		float x1 = (i - c1) / slope1;
+		float x2 = (i - c2) / slope2;
+		//x1 = abs(x1);
+		//x2 = abs(x2);
+
+		if (x1 < x2) {
+			for (int j = (int)x1; j < (int)x2; j++) {
+				mRasterizerState->getInstance()->vUpdateColorAt(j, i, col);
+			}
+		} else {
+			for (int j = (int)x2; j < (int)x1; j++) {
+				mRasterizerState->getInstance()->vUpdateColorAt(j, i, col);
+			}
+		}		
+	}
+}
+
 
 bool flag;
 void Rasterizer::Run()
@@ -164,9 +219,16 @@ void Rasterizer::Run()
 	}
 
 	RasterizerState::getInstance()->vSetmodelViewMatrix(Transformation::mGetRotationMatrix(ang += 1, 1.0, 0.0, 0.0));
-	RasterizerState::getInstance()->vSetProjectionMatrix(Transformation::mGetOrthographicProjectionMatrix(-4, 4, -4, 4, -100, 100));
+	RasterizerState::getInstance()->vSetProjectionMatrix(Transformation::mGetOrthographicProjectionMatrix(-2, 2, -2, 2, -100, 100));
 
 	Rasterizer::getInstance()->vPerformModelTransform();
 	Rasterizer::getInstance()->vPerformProjection();
 	Rasterizer::getInstance()->vPerformWindowTransform();
+
+	Rasterizer::getInstance()->vClearTriangleBatch();	
+}
+
+void Rasterizer::vClearTriangleBatch()
+{
+	mTriangleBatchCache.clear();
 }

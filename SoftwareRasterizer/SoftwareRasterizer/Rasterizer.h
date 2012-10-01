@@ -36,6 +36,8 @@ class Rasterizer {
 			void vPerformProjection();
 			void vPerformWindowTransform();
 			void Run();
+			void vClearTriangleBatch();
+			void vScanAndColorTriangle(float, float, float, float, float, float);
 
 			inline float winTramsformX(float x, float y)
 			{
@@ -52,6 +54,8 @@ class Rasterizer {
 				mRasterizerState->getInstance()->getWindowTransformationMatrix()[1][1] * y +
 				mRasterizerState->getInstance()->getWindowTransformationMatrix()[1][2];
 			}
+
+			
 
 };
 
