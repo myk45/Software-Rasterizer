@@ -76,6 +76,8 @@ void Rasterizer::setBoundingBox(float xMin, float xMax, float yMin, float yMax, 
 
 void Rasterizer::vPerformModelTransform()
 {
+    mTriangleBatchCache.clear();
+
 	// assume that the modelview is set
 	for (unsigned int i = 0; i < mVertexAttribBuff->getInstance()->getVertexBuffer().size()-3; i += 3) {
 		VertexAttrib v1, v2, v3;
